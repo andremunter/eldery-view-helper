@@ -232,3 +232,17 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* Bongo Cat slår på strömavbrottsknappen */
+@keyframes bongo-up-swap {
+  0%, 55% { opacity: 1; transform: translateY(0); }
+  60%, 90% { opacity: 0; transform: translateY(6%); }
+  95%, 100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes bongo-slap-swap {
+  0%, 55% { opacity: 0; transform: translateY(-8%); }
+  60%, 90% { opacity: 1; transform: translateY(0); }
+  95%, 100% { opacity: 0; transform: translateY(-8%); }
+}
+.bongo-up { animation: bongo-up-swap 1.2s ease-in-out infinite; }
+.bongo-slap { animation: bongo-slap-swap 1.2s ease-in-out infinite; }
