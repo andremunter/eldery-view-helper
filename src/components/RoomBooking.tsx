@@ -125,7 +125,7 @@ export function RoomBooking() {
                 <Button variant="gold" className="mt-4" onClick={() => { setCounts(squeezed); setBooked(false); }}>Tränga ihop oss</Button>
               </>
             ) : (
-              <p className="font-display text-2xl">{people} personer ryms inte ens om alla trängs ihop (max 98). Hildur föreslår tält på fjället.</p>
+              <p className="font-display text-2xl">{people} personer ryms inte ens om alla trängs ihop (max {MAX_SQUEEZE}). Hildur föreslår tält på fjället.</p>
             )}
           </div>
 
