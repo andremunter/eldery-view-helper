@@ -364,6 +364,7 @@ function GuestServices({ t, tunaCans, setTunaCans, kjellPetted, setKjellPetted, 
   const [issue, setIssue] = useState("");
   const [kjellRevealed, setKjellRevealed] = useState(false);
   const [kjellPriority, setKjellPriority] = useState(false);
+  const [queuePosition, setQueuePosition] = useState<number | null>(null);
   const [evasion, setEvasion] = useState(0);
   const serviceData = [
     { id: "sauna" as const, icon: Flame, title: "Boka bastun", sub: "Värme, utsikt och plats för 8" },
@@ -383,7 +384,9 @@ function GuestServices({ t, tunaCans, setTunaCans, kjellPetted, setKjellPetted, 
       return;
     }
     if (service === "sauna" && !kjellPriority) {
-      toast.info("Bastun är bokad", { description: "Med 2 tonfiskar hade du gått före i kön." });
+      const queuePos = Math.floor(Math.random() * 5) + 2;
+      setQueuePosition(queuePos);
+      toast.info("Bastun är bokad", { description: `Du hamnade i kön på plats ${queuePos}. Ge 2 tonfiskar för att gå före.` });
     }
     if (service === "sauna" && !kjellPetted) {
       toast.error("Kjell kräver en klapp först");
@@ -401,7 +404,7 @@ function GuestServices({ t, tunaCans, setTunaCans, kjellPetted, setKjellPetted, 
       addBooking({ type: "sauna", name: "Gäst", roomNumber: room.trim(), time, guests });
     }
     toast.success(service === "sauna" ? "Bastun är bokad!" : service === "breakfast" ? "Frukosten är beställd!" : "Felanmälan är mottagen!", {
-      description: service === "sauna" ? `${time} för ${guests} ${guests === 1 ? "person" : "personer"}. Rum ${room.trim()}.${kjellPriority ? " Du går före i kön!" : ""} Hildur har tänt aggregatet.` : "Receptionen bekräftar strax.",
+      description: service === "sauna" ? `${time} för ${guests} ${guests === 1 ? "person" : "personer"}. Rum ${room.trim()}.${kjellPriority ? " Du är först i kön!" : queuePosition ? ` Du är i kön på plats ${queuePosition}.` : ""} Hildur har tänt aggregatet.` : "Receptionen bekräftar strax.",
     });
     setIssue("");
   };
@@ -417,13 +420,13 @@ function GuestServices({ t, tunaCans, setTunaCans, kjellPetted, setKjellPetted, 
           })}
         </div>
         <div className="border border-border bg-card p-6 md:p-9">
-          {service === "sauna" && <SaunaForm guests={guests} setGuests={setGuests} time={time} setTime={setTime} room={room} setRoom={setRoom} kjellRevealed={kjellRevealed} tunaCans={tunaCans} setTunaCans={setTunaCans} kjellPetted={kjellPetted} setKjellPetted={setKjellPetted} kjellBribed={kjellBribed} setKjellBribed={setKjellBribed} kjellPriority={kjellPriority} setKjellPriority={setKjellPriority} />}
+          {service === "sauna" && <SaunaForm guests={guests} setGuests={setGuests} time={time} setTime={setTime} room={room} setRoom={setRoom} kjellRevealed={kjellRevealed} tunaCans={tunaCans} setTunaCans={setTunaCans} kjellPetted={kjellPetted} setKjellPetted={setKjellPetted} kjellBribed={kjellBribed} setKjellBribed={setKjellBribed} kjellPriority={kjellPriority} setKjellPriority={setKjellPriority} queuePosition={queuePosition} setQueuePosition={setQueuePosition} />}
           {service === "breakfast" && <BreakfastForm room={room} setRoom={setRoom} />}
           {service === "issue" && <IssueForm room={room} setRoom={setRoom} issue={issue} setIssue={setIssue} />}
           {service === "sauna" ? (
             <div className="relative mt-8 h-24 overflow-visible">
               <Button variant="gold" size="lg" className={cn("absolute left-1/2 w-[min(100%,22rem)] -translate-x-1/2 transition-all duration-200", kjellRevealed && !kjellBribed && ["top-0", "top-10 -translate-x-[85%]", "top-3 -translate-x-[15%]", "top-12 -translate-x-1/2"][evasion % 4])} onPointerEnter={() => kjellRevealed && !kjellBribed && setEvasion((current) => current + 1)} onClick={submit}>
-                {kjellBribed ? kjellPetted ? (kjellPriority ? "Bekräfta bastutid · först i kön" : "Bekräfta bastutid") : "Klappa Kjell först" : "Bekräfta bastutid"}<Check />
+                {kjellBribed ? kjellPetted ? (kjellPriority ? "Först i kön" : "Bekräfta bastutid") : "Klappa Kjell först" : "Bekräfta bastutid"}<Check />
               </Button>
             </div>
           ) : <Button variant="gold" size="lg" className="mt-8 w-full" onClick={submit}>{service === "breakfast" ? "Beställ frukost" : "Skicka till receptionen"}<Check /></Button>}
@@ -433,7 +436,7 @@ function GuestServices({ t, tunaCans, setTunaCans, kjellPetted, setKjellPetted, 
   );
 }
 
-function SaunaForm({ guests, setGuests, time, setTime, room, setRoom, kjellRevealed, tunaCans, setTunaCans, kjellPetted, setKjellPetted, kjellBribed, setKjellBribed, kjellPriority, setKjellPriority }: { guests: number; setGuests: (n: number) => void; time: string; setTime: (s: string) => void; room: string; setRoom: (s: string) => void; kjellRevealed: boolean; tunaCans: number; setTunaCans: (n: number) => void; kjellPetted: boolean; setKjellPetted: (v: boolean) => void; kjellBribed: boolean; setKjellBribed: (v: boolean) => void; kjellPriority: boolean; setKjellPriority: (v: boolean) => void }) {
+function SaunaForm({ guests, setGuests, time, setTime, room, setRoom, kjellRevealed, tunaCans, setTunaCans, kjellPetted, setKjellPetted, kjellBribed, setKjellBribed, kjellPriority, setKjellPriority, queuePosition, setQueuePosition }: { guests: number; setGuests: (n: number) => void; time: string; setTime: (s: string) => void; room: string; setRoom: (s: string) => void; kjellRevealed: boolean; tunaCans: number; setTunaCans: (n: number) => void; kjellPetted: boolean; setKjellPetted: (v: boolean) => void; kjellBribed: boolean; setKjellBribed: (v: boolean) => void; kjellPriority: boolean; setKjellPriority: (v: boolean) => void; queuePosition: number | null; setQueuePosition: (v: number | null) => void }) {
   const petKjell = () => { setKjellPetted(true); toast.success("Kjell spinner", { description: "Bastuvakten godkänner din klappteknik." }); };
   const buyTuna = () => { setTunaCans(tunaCans + 1); toast.success("Klunk!", { description: "En tonfiskburk rullade ut ur automaten." }); };
   const bribeKjell = () => {
@@ -443,8 +446,10 @@ function SaunaForm({ guests, setGuests, time, setTime, room, setRoom, kjellRevea
     if (tunaCans >= 2) {
       setTunaCans(tunaCans - 1);
       setKjellPriority(true);
+      setQueuePosition(1);
       toast.success("Förhandlingen är klar", { description: "Kjell placerar dig först i bastukön!" });
     } else {
+      setQueuePosition(null);
       toast.success("Förhandlingen är klar", { description: "Kjell låter dig boka bastun." });
     }
   };
