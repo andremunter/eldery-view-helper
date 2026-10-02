@@ -45,6 +45,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { RoomBooking } from "@/components/RoomBooking";
 import kjellPortrait from "@/assets/kjell-hotel-cat.jpg";
 
 export const Route = createFileRoute("/")({
@@ -68,12 +69,12 @@ export const Route = createFileRoute("/")({
 });
 
 type Language = "sv" | "en" | "sma";
-type View = "welcome" | "services" | "security" | "infra";
+type View = "welcome" | "booking" | "services" | "security" | "infra";
 type DisplayMode = "standard" | "senior";
 
 const copy = {
   sv: {
-    nav: ["Välkommen", "Gästtjänster", "Trygghet & säkerhet", "Drift & infrastruktur"],
+    nav: ["Välkommen", "Boka rum", "Gästtjänster", "Trygghet & säkerhet", "Drift & infrastruktur"],
     hello: "Buerie båeteme.",
     intro: "Hej! Jag är Hildur 4.0. Fråga mig om fjället, boka bastun eller beställ frukost. Jag rimmar inte längre och har slutat starta om mitt i en mening.",
     ask: "Vad kan jag hjälpa dig med?",
@@ -91,7 +92,7 @@ const copy = {
     infraIntro: "En robust driftkedja byggd för fjällväder, strömavbrott och riktigt varma bastukvällar.",
   },
   en: {
-    nav: ["Welcome", "Guest services", "Safety & security", "Operations & infrastructure"],
+    nav: ["Welcome", "Book a room", "Guest services", "Safety & security", "Operations & infrastructure"],
     hello: "Buerie båeteme.",
     intro: "Hi! I'm Hildur 4.0. Ask me about the mountain, book the sauna or order breakfast. I no longer rhyme or reboot mid-sentence.",
     ask: "How can I help?",
@@ -109,7 +110,7 @@ const copy = {
     infraIntro: "A resilient system built for mountain weather, power cuts and very hot sauna evenings.",
   },
   sma: {
-    nav: ["Buerie båeteme", "Gåessie-dïenesjh", "Jearsoesvoete", "Dååjrehtimmie"],
+    nav: ["Buerie båeteme", "Gåetiem böörkedh", "Gåessie-dïenesjh", "Jearsoesvoete", "Dååjrehtimmie"],
     hello: "Buerie båeteme Hjortronasse.",
     intro: "Manne Hildur 4.0. Manne datnem viehkehtem saavnine, beapmojne jïh vaeresne.",
     ask: "Mij maahtam viehkiehtidh?",
@@ -130,6 +131,7 @@ const copy = {
 
 const tabs: Array<{ id: View; icon: typeof Sparkles }> = [
   { id: "welcome", icon: Sparkles },
+  { id: "booking", icon: BedDouble },
   { id: "services", icon: BellRing },
   { id: "security", icon: ShieldCheck },
   { id: "infra", icon: Cloud },
@@ -215,7 +217,7 @@ function HotelApp() {
             </Button>
           </div>
         </div>
-        <nav className="relative mx-auto grid max-w-[1440px] grid-cols-4 px-1 md:px-8" aria-label="Huvudmeny">
+        <nav className="relative mx-auto grid max-w-[1440px] grid-cols-5 px-1 md:px-8" aria-label="Huvudmeny">
           {tabs.map((tab, index) => {
             const Icon = tab.icon;
             return (
@@ -235,6 +237,7 @@ function HotelApp() {
 
       <main>
         {view === "welcome" && <Welcome t={t} onNavigate={setView} />}
+        {view === "booking" && <RoomBooking />}
         {view === "services" && <GuestServices t={t} tunaCans={tunaCans} setTunaCans={setTunaCans} kjellPetted={kjellPetted} setKjellPetted={setKjellPetted} kjellBribed={kjellBribed} setKjellBribed={setKjellBribed} />}
         {view === "security" && <Security t={t} />}
         {view === "infra" && <Infrastructure t={t} />}
@@ -317,7 +320,7 @@ function Welcome({ t, onNavigate }: { t: Copy; onNavigate: (view: View) => void 
           <StatusRow icon={Sparkles} label={t.aurora} value="AV" meta="Molnigt · KP 2" off />
           <StatusRow icon={Cat} label={t.catStatus} value={t.sleepy} meta={t.revoked} gold />
           <Button variant="outline" className="mt-6 w-full justify-between" onClick={() => onNavigate("services")}>
-            {t.nav[1]} <ChevronRight />
+            {t.nav[2]} <ChevronRight />
           </Button>
         </aside>
       </div>
