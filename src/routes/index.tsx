@@ -363,6 +363,7 @@ function GuestServices({ t, tunaCans, setTunaCans, kjellPetted, setKjellPetted, 
   const [room, setRoom] = useState("");
   const [issue, setIssue] = useState("");
   const [kjellRevealed, setKjellRevealed] = useState(false);
+  const [kjellPriority, setKjellPriority] = useState(false);
   const [evasion, setEvasion] = useState(0);
   const serviceData = [
     { id: "sauna" as const, icon: Flame, title: "Boka bastun", sub: "Värme, utsikt och plats för 8" },
@@ -381,6 +382,9 @@ function GuestServices({ t, tunaCans, setTunaCans, kjellPetted, setKjellPetted, 
       toast("Inte så fort", { description: "Kjell flyttade knappen. Ingen tonfisk, ingen bastu." });
       return;
     }
+    if (service === "sauna" && !kjellPriority) {
+      toast.info("Bastun är bokad", { description: "Med 2 tonfiskar hade du gått före i kön." });
+    }
     if (service === "sauna" && !kjellPetted) {
       toast.error("Kjell kräver en klapp först");
       return;
@@ -397,7 +401,7 @@ function GuestServices({ t, tunaCans, setTunaCans, kjellPetted, setKjellPetted, 
       addBooking({ type: "sauna", name: "Gäst", roomNumber: room.trim(), time, guests });
     }
     toast.success(service === "sauna" ? "Bastun är bokad!" : service === "breakfast" ? "Frukosten är beställd!" : "Felanmälan är mottagen!", {
-      description: service === "sauna" ? `${time} för ${guests} ${guests === 1 ? "person" : "personer"}. Rum ${room.trim()}. Hildur har tänt aggregatet.` : "Receptionen bekräftar strax.",
+      description: service === "sauna" ? `${time} för ${guests} ${guests === 1 ? "person" : "personer"}. Rum ${room.trim()}.${kjellPriority ? " Du går före i kön!" : ""} Hildur har tänt aggregatet.` : "Receptionen bekräftar strax.",
     });
     setIssue("");
   };
@@ -413,13 +417,13 @@ function GuestServices({ t, tunaCans, setTunaCans, kjellPetted, setKjellPetted, 
           })}
         </div>
         <div className="border border-border bg-card p-6 md:p-9">
-          {service === "sauna" && <SaunaForm guests={guests} setGuests={setGuests} time={time} setTime={setTime} room={room} setRoom={setRoom} kjellRevealed={kjellRevealed} tunaCans={tunaCans} setTunaCans={setTunaCans} kjellPetted={kjellPetted} setKjellPetted={setKjellPetted} kjellBribed={kjellBribed} setKjellBribed={setKjellBribed} />}
+          {service === "sauna" && <SaunaForm guests={guests} setGuests={setGuests} time={time} setTime={setTime} room={room} setRoom={setRoom} kjellRevealed={kjellRevealed} tunaCans={tunaCans} setTunaCans={setTunaCans} kjellPetted={kjellPetted} setKjellPetted={setKjellPetted} kjellBribed={kjellBribed} setKjellBribed={setKjellBribed} kjellPriority={kjellPriority} setKjellPriority={setKjellPriority} />}
           {service === "breakfast" && <BreakfastForm room={room} setRoom={setRoom} />}
           {service === "issue" && <IssueForm room={room} setRoom={setRoom} issue={issue} setIssue={setIssue} />}
           {service === "sauna" ? (
             <div className="relative mt-8 h-24 overflow-visible">
               <Button variant="gold" size="lg" className={cn("absolute left-1/2 w-[min(100%,22rem)] -translate-x-1/2 transition-all duration-200", kjellRevealed && !kjellBribed && ["top-0", "top-10 -translate-x-[85%]", "top-3 -translate-x-[15%]", "top-12 -translate-x-1/2"][evasion % 4])} onPointerEnter={() => kjellRevealed && !kjellBribed && setEvasion((current) => current + 1)} onClick={submit}>
-                {kjellBribed ? kjellPetted ? "Bekräfta bastutid · först i kön" : "Klappa Kjell först" : "Bekräfta bastutid"}<Check />
+                {kjellBribed ? kjellPetted ? (kjellPriority ? "Bekräfta bastutid · först i kön" : "Bekräfta bastutid") : "Klappa Kjell först" : "Bekräfta bastutid"}<Check />
               </Button>
             </div>
           ) : <Button variant="gold" size="lg" className="mt-8 w-full" onClick={submit}>{service === "breakfast" ? "Beställ frukost" : "Skicka till receptionen"}<Check /></Button>}
@@ -429,14 +433,20 @@ function GuestServices({ t, tunaCans, setTunaCans, kjellPetted, setKjellPetted, 
   );
 }
 
-function SaunaForm({ guests, setGuests, time, setTime, room, setRoom, kjellRevealed, tunaCans, setTunaCans, kjellPetted, setKjellPetted, kjellBribed, setKjellBribed }: { guests: number; setGuests: (n: number) => void; time: string; setTime: (s: string) => void; room: string; setRoom: (s: string) => void; kjellRevealed: boolean; tunaCans: number; setTunaCans: (n: number) => void; kjellPetted: boolean; setKjellPetted: (v: boolean) => void; kjellBribed: boolean; setKjellBribed: (v: boolean) => void }) {
+function SaunaForm({ guests, setGuests, time, setTime, room, setRoom, kjellRevealed, tunaCans, setTunaCans, kjellPetted, setKjellPetted, kjellBribed, setKjellBribed, kjellPriority, setKjellPriority }: { guests: number; setGuests: (n: number) => void; time: string; setTime: (s: string) => void; room: string; setRoom: (s: string) => void; kjellRevealed: boolean; tunaCans: number; setTunaCans: (n: number) => void; kjellPetted: boolean; setKjellPetted: (v: boolean) => void; kjellBribed: boolean; setKjellBribed: (v: boolean) => void; kjellPriority: boolean; setKjellPriority: (v: boolean) => void }) {
   const petKjell = () => { setKjellPetted(true); toast.success("Kjell spinner", { description: "Bastuvakten godkänner din klappteknik." }); };
   const buyTuna = () => { setTunaCans(tunaCans + 1); toast.success("Klunk!", { description: "En tonfiskburk rullade ut ur automaten." }); };
   const bribeKjell = () => {
     if (tunaCans < 1) { toast.error("Du behöver en tonfiskburk"); return; }
     setTunaCans(tunaCans - 1);
     setKjellBribed(true);
-    toast.success("Förhandlingen är klar", { description: "Kjell placerar dig först i bastukön." });
+    if (tunaCans >= 2) {
+      setTunaCans(tunaCans - 1);
+      setKjellPriority(true);
+      toast.success("Förhandlingen är klar", { description: "Kjell placerar dig först i bastukön!" });
+    } else {
+      toast.success("Förhandlingen är klar", { description: "Kjell låter dig boka bastun." });
+    }
   };
   return <div><FormTitle icon={Flame} title="Bastun" text="45 minuter · Handduk och fjällvatten ingår" /><Label>Välj tid</Label><div className="mt-2 grid grid-cols-3 gap-2">{["17:00", "18:00", "19:00", "20:00", "21:00"].map((slot) => <button key={slot} onClick={() => setTime(slot)} className={cn("h-11 border text-sm font-bold transition-colors", time === slot ? "border-primary bg-primary text-primary-foreground" : "border-border hover:border-primary")}>{slot}</button>)}</div><div className="mt-7 flex items-end justify-between gap-4"><div><Label htmlFor="sauna-guests">Antal gäster</Label><p className="mt-1 text-xs text-muted-foreground">Max 8 personer av säkerhetsskäl</p></div><div className="flex items-center border border-border"><Button variant="ghost" size="icon" onClick={() => setGuests(Math.max(1, guests - 1))} aria-label="Minska antal gäster">−</Button><input id="sauna-guests" type="number" min={1} max={8} value={guests} onChange={(e) => { const v = parseInt(e.target.value, 10); if (!isNaN(v)) setGuests(Math.max(1, Math.min(8, v))); else if (e.target.value === "") setGuests(1); }} onBlur={(e) => { if (e.target.value === "") setGuests(1); }} className="w-11 border-0 bg-transparent text-center font-display text-xl outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" /><Button variant="ghost" size="icon" onClick={() => guests < 8 ? setGuests(guests + 1) : toast.warning("Bastun är full", { description: "Maxkapaciteten är 8 personer." })} aria-label="Öka antal gäster">+</Button></div></div><div className="mt-6"><Label htmlFor="sauna-room">Rumsnummer</Label><Input id="sauna-room" value={room} onChange={(e) => setRoom(e.target.value)} className="mt-2" placeholder="Till exempel 204" /></div><div className="mt-6 flex items-center gap-3 bg-gold-soft p-4 text-sm text-gold-deep"><Users className="size-5" /><span><strong>{8 - guests} platser kvar</strong> på din bokning</span></div>{kjellRevealed && <div className="mt-6 animate-in fade-in slide-in-from-bottom-3 border-2 border-gold bg-muted p-4"><div className="grid gap-4 sm:grid-cols-[7rem_1fr]"><img src={bongoCatUp} alt="Kjell gömmer sig bakom bastumenyn" width={1024} height={1024} loading="lazy" className="h-28 w-full object-contain" /><div><p className="font-display text-2xl">Kjell hittade dig.</p><p className="mt-1 text-sm text-muted-foreground">Ingen tonfisk, ingen bastu. En klapp är dessutom obligatorisk.</p><div className="mt-4 flex flex-wrap gap-2"><Button variant={kjellPetted ? "outline" : "default"} onClick={petKjell} disabled={kjellPetted}><Hand />{kjellPetted ? "Klappt och klart" : "Klappa Kjell"}</Button><Button variant="gold" onClick={bribeKjell} disabled={kjellBribed}><Fish />{kjellBribed ? "Först i kön" : "Ge tonfisk"}</Button></div></div></div></div>}<div className="mt-5 border border-border bg-background p-4"><div className="flex items-center justify-between gap-3"><div><p className="text-xs font-bold uppercase text-muted-foreground">Tonfiskautomaten</p><p className="font-display text-xl">FJÄLLFISK 24/7</p></div><div className="grid size-12 place-items-center bg-primary text-primary-foreground"><Fish /></div></div><div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-4"><span className="text-sm font-semibold">I fickan: {tunaCans} {tunaCans === 1 ? "burk" : "burkar"}</span><Button variant="outline" onClick={buyTuna}><Fish /> Köp tonfisk</Button></div></div></div>;
 }
