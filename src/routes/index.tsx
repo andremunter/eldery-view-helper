@@ -16,13 +16,11 @@ import {
   HeartPulse,
   Languages,
   LockKeyhole,
-  Moon,
   Power,
   Radio,
   Send,
   ShieldCheck,
   Sparkles,
-  Sun,
   ThermometerSun,
   TriangleAlert,
   Users,
@@ -142,7 +140,6 @@ function HotelApp() {
   const [language, setLanguage] = useState<Language>("sv");
   const [displayMode, setDisplayMode] = useState<DisplayMode | null>(null);
   const [view, setView] = useState<View>("welcome");
-  const [dark, setDark] = useState(true);
   const [catOpen, setCatOpen] = useState(false);
   const [tunaCans, setTunaCans] = useState(0);
   const [kjellPetted, setKjellPetted] = useState(false);
@@ -150,7 +147,7 @@ function HotelApp() {
   const t = copy[language];
 
   return (
-    <div className={cn("min-h-screen bg-background text-foreground transition-colors", dark && "dark", displayMode === "senior" && "senior-mode")}>
+    <div className={cn("min-h-screen bg-background text-foreground transition-colors", displayMode === "senior" && "senior-mode")}>
       {displayMode === null && (
         <div className="view-choice fixed inset-0 z-[100] grid place-items-center bg-lodge px-4 py-8 text-lodge-foreground" role="dialog" aria-modal="true" aria-labelledby="view-choice-title">
           <div className="mountain-lines absolute inset-0 opacity-25" />
@@ -205,9 +202,6 @@ function HotelApp() {
                 </button>
               ))}
             </div>
-            <Button variant="lodgeGhost" size="icon" onClick={() => setDark(!dark)} aria-label={dark ? "Ljust läge" : "Mörkt läge"}>
-              {dark ? <Sun /> : <Moon />}
-            </Button>
             {displayMode !== null && (
               <Button variant="lodgeGhost" onClick={() => setDisplayMode(null)} className="px-3 md:px-4">
                 <Eye /> <span className="hidden sm:inline">Ändra visning</span>
@@ -475,5 +469,5 @@ function Infrastructure({ t }: { t: Copy }) {
     { icon: Radio, label: "Hotell Hjortronet", detail: "Krypterad anslutning", status: statuses[1] },
     { icon: Cpu, label: "Raspberry Pi", detail: "Lokal reserv · Receptionen", status: statuses[2] },
   ];
-  return <div className="mx-auto max-w-[1200px] px-4 py-10 md:px-8 md:py-16"><div className="flex flex-col justify-between gap-6 md:flex-row md:items-end"><SectionHeading eyebrow="Drift & infrastruktur" title={t.infraTitle} text={t.infraIntro} /><div className="relative mt-20 self-start md:self-auto"><div className="kjell-threat pointer-events-none absolute -right-2 -top-20 z-10 flex items-end"><div className="mb-8 max-w-36 border border-gold bg-background px-3 py-2 text-xs font-bold shadow-lg">Tryck då. Jag vågar dig.</div><span className="relative block h-24 w-24"><img src={bongoCatUp} alt="Kjell försöker slå på strömavbrottsknappen" width={1024} height={1024} loading="lazy" className="bongo-up absolute inset-0 h-full w-full object-contain" /><img src={bongoCatSlap} alt="" width={1024} height={1024} loading="lazy" className="bongo-slap absolute inset-0 h-full w-full object-contain" /></span></div><Button variant={powerOut ? "destructive" : "outline"} size="lg" onClick={() => { setPowerOut(!powerOut); toast(powerOut ? "Strömmen är tillbaka" : "Simulerat strömavbrott", { description: powerOut ? "Molndriften synkar igen." : "Raspberry Pi-reserven tar över lokalt. Kjell ser nöjd ut." }); }}><Power />{powerOut ? "Återställ ström" : "Testa strömavbrott"}</Button></div></div><div className="relative mt-4 border border-border bg-card p-6 md:p-10"><div className="grid gap-4 md:grid-cols-[1fr_auto_1fr_auto_1fr] md:items-center">{nodes.map(({ icon: Icon, label, detail, status }, index) => <div key={label} className="contents"><article className={cn("relative border p-6 text-center transition-all", status === "Offline" ? "border-destructive/40 bg-destructive/5 opacity-55" : status === "Aktiv reserv" ? "border-gold bg-gold-soft" : "border-border bg-background")}><div className="mx-auto mb-5 grid size-14 place-items-center bg-primary text-primary-foreground"><Icon className="size-7" /></div><h2 className="font-display text-xl">{label}</h2><p className="mt-2 text-xs text-muted-foreground">{detail}</p><span className={cn("mt-5 inline-flex items-center gap-2 text-xs font-bold uppercase", status === "Offline" ? "text-destructive" : "text-success")}><span className="size-2 rounded-full bg-current" />{status}</span></article>{index < nodes.length - 1 && <div className="flex items-center justify-center text-muted-foreground"><div className="h-px flex-1 bg-border md:h-20 md:w-px md:flex-none" /><ChevronRight className="size-5 rotate-90 md:rotate-0" /></div>}</div>)}</div><div className="mt-8 flex gap-3 border-l-4 border-gold bg-gold-soft p-5 text-gold-deep"><ThermometerSun className="mt-0.5 size-5 shrink-0" /><p className="text-sm leading-relaxed"><strong>Bastun är nu bara en bastu.</strong> Hildur 3000:s server stod tidigare under lavarna. Hildur 4.0 körs svalt, säkert och med lokal reservkraft.</p></div>{powerOut && <div className="mt-4 flex items-center gap-3 border border-success/30 bg-success-soft p-4 text-sm text-success"><WifiOff className="size-5" /><strong>Reservläge aktivt:</strong> dörrlås, brandlarm och reception fungerar lokalt.</div>}</div></div>;
+  return <div className="mx-auto max-w-[1200px] px-4 py-10 md:px-8 md:py-16"><div className="flex flex-col justify-between gap-6 md:flex-row md:items-end"><SectionHeading eyebrow="Drift & infrastruktur" title={t.infraTitle} text={t.infraIntro} /><div className="relative mt-20 self-start md:self-auto"><div className="kjell-threat pointer-events-none absolute -right-2 -top-20 z-10 flex items-end"><div className="mb-8 max-w-36 border border-gold bg-background px-3 py-2 text-xs font-bold shadow-lg">Tryck då, fegis</div><span className="relative block h-24 w-24"><img src={bongoCatUp} alt="Kjell försöker slå på strömavbrottsknappen" width={1024} height={1024} loading="lazy" className="bongo-up absolute inset-0 h-full w-full object-contain" /><img src={bongoCatSlap} alt="" width={1024} height={1024} loading="lazy" className="bongo-slap absolute inset-0 h-full w-full object-contain" /></span></div><Button variant={powerOut ? "destructive" : "outline"} size="lg" onClick={() => { setPowerOut(!powerOut); toast(powerOut ? "Strömmen är tillbaka" : "Simulerat strömavbrott", { description: powerOut ? "Molndriften synkar igen." : "Raspberry Pi-reserven tar över lokalt. Kjell ser nöjd ut." }); }}><Power />{powerOut ? "Återställ ström" : "Testa strömavbrott"}</Button></div></div><div className="relative mt-4 border border-border bg-card p-6 md:p-10"><div className="grid gap-4 md:grid-cols-[1fr_auto_1fr_auto_1fr] md:items-center">{nodes.map(({ icon: Icon, label, detail, status }, index) => <div key={label} className="contents"><article className={cn("relative border p-6 text-center transition-all", status === "Offline" ? "border-destructive/40 bg-destructive/5 opacity-55" : status === "Aktiv reserv" ? "border-gold bg-gold-soft" : "border-border bg-background")}><div className="mx-auto mb-5 grid size-14 place-items-center bg-primary text-primary-foreground"><Icon className="size-7" /></div><h2 className="font-display text-xl">{label}</h2><p className="mt-2 text-xs text-muted-foreground">{detail}</p><span className={cn("mt-5 inline-flex items-center gap-2 text-xs font-bold uppercase", status === "Offline" ? "text-destructive" : "text-success")}><span className="size-2 rounded-full bg-current" />{status}</span></article>{index < nodes.length - 1 && <div className="flex items-center justify-center text-muted-foreground"><div className="h-px flex-1 bg-border md:h-20 md:w-px md:flex-none" /><ChevronRight className="size-5 rotate-90 md:rotate-0" /></div>}</div>)}</div><div className="mt-8 flex gap-3 border-l-4 border-gold bg-gold-soft p-5 text-gold-deep"><ThermometerSun className="mt-0.5 size-5 shrink-0" /><p className="text-sm leading-relaxed"><strong>Bastun är nu bara en bastu.</strong> Hildur 3000:s server stod tidigare under lavarna. Hildur 4.0 körs svalt, säkert och med lokal reservkraft.</p></div>{powerOut && <div className="mt-4 flex items-center gap-3 border border-success/30 bg-success-soft p-4 text-sm text-success"><WifiOff className="size-5" /><strong>Reservläge aktivt:</strong> dörrlås, brandlarm och reception fungerar lokalt.</div>}</div></div>;
 }
