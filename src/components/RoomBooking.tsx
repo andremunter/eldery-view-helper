@@ -2,8 +2,11 @@ import { useMemo, useState } from "react";
 import { BedDouble, BedSingle, Check, Fish, Mountain, Sparkles, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { addBooking, getNextRoomNumber, getAvailableRoomCount } from "@/lib/booking-store";
+import { RoomType } from "@/lib/bookings";
 
 type RoomType = "double" | "single" | "suite";
 type Counts = Record<RoomType, number>;
@@ -13,6 +16,8 @@ const rooms: Array<{ id: RoomType; name: string; total: number; capacity: number
   { id: "double", name: "Dubbelrum", total: 15, capacity: 2, squeeze: 3, icon: BedDouble, text: "Dubbelsäng och utsikt mot skogen." },
   { id: "suite", name: "Svit", total: 3, capacity: 4, squeeze: 6, icon: Mountain, text: "En dubbelsäng + två enkelsängar, utsikt över fjället och jacuzzi på balkongen. Varmt vatten kostar en tonfisk till Kjell." },
 ];
+
+const ROOM_TOTALS: Record<RoomType, number> = { single: 20, double: 15, suite: 3 };
 
 const empty: Counts = { single: 0, double: 0, suite: 0 };
 const capacityOf = (c: Counts, key: "capacity" | "squeeze" = "capacity") => rooms.reduce((sum, r) => sum + c[r.id] * r[key], 0);
@@ -45,6 +50,7 @@ export function RoomBooking() {
   const [people, setPeople] = useState(2);
   const [counts, setCounts] = useState<Counts>({ ...empty, double: 1 });
   const [booked, setBooked] = useState(false);
+  const [guestName, setGuestName] = useState("");
 
   const normal = useMemo(() => suggest(people, "capacity"), [people]);
   const squeezed = useMemo(() => (normal ? null : suggest(people, "squeeze")), [people, normal]);
@@ -59,10 +65,25 @@ export function RoomBooking() {
   };
 
   const book = () => {
+    if (!guestName.trim()) { toast.error("Fyll i ditt namn"); return; }
     if (total === 0) { toast.error("Välj minst ett rum"); return; }
     if (people > squeezeCap) { toast.error("Alla får inte plats", { description: "Följ Hildurs förslag eller lägg till fler rum." }); return; }
+
+    const bookings: Array<{ type: "room"; roomType: RoomType; guests: number; roomNumber: string }> = [];
+    for (const r of rooms) {
+      const count = counts[r.id];
+      for (let i = 0; i < count; i++) {
+        const roomNumber = getNextRoomNumber(r.id);
+        bookings.push({ type: "room", roomType: r.id, guests: r.capacity, roomNumber });
+      }
+    }
+
+    for (const b of bookings) {
+      addBooking({ ...b, name: guestName.trim() });
+    }
+
     setBooked(true);
-    toast.success("Bokningen är klar!", { description: `${people} personer i ${describe(counts)}.${counts.suite ? " Glöm inte tonfisken till Kjell." : ""}` });
+    toast.success("Bokningen är klar!", { description: `${guestName.trim()} — ${people} personer i ${describe(counts)}. Rum: ${bookings.map((b) => b.roomNumber).join(", ")}` });
   };
 
   return (
@@ -75,6 +96,10 @@ export function RoomBooking() {
 
       <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
         <div className="space-y-4">
+          <div className="border border-border bg-card p-5">
+            <Label htmlFor="guest-name">Ditt namn</Label>
+            <Input id="guest-name" value={guestName} onChange={(e) => setGuestName(e.target.value)} className="mt-2" placeholder="För- och efternamn" />
+          </div>
           <div className="flex items-center justify-between gap-4 border border-border bg-card p-5">
             <div><Label>Antal personer</Label><p className="mt-1 text-xs text-muted-foreground">Max 62 i ordinarie bäddar</p></div>
             <Stepper value={people} min={1} max={MAX_SQUEEZE} onMinus={() => { setBooked(false); setPeople(Math.max(1, people - 1)); }} onPlus={() => { setBooked(false); setPeople(people + 1); }} onChange={(v) => { setBooked(false); setPeople(v); }} ariaLabel="antal personer" />
@@ -98,12 +123,15 @@ export function RoomBooking() {
           <div className="border border-border bg-card p-6">
             <p className="text-xs font-bold uppercase text-muted-foreground">Tillgängliga rum</p>
             <ul className="mt-3 space-y-2">
-              {rooms.map((r) => (
-                <li key={r.id} className="flex items-center justify-between gap-2 text-sm">
-                  <span className="flex items-center gap-2"><r.icon className="size-4 text-gold-deep" /> {r.name}</span>
-                  <span className="font-semibold">{r.total - counts[r.id]} av {r.total} lediga</span>
-                </li>
-              ))}
+              {rooms.map((r) => {
+                const available = getAvailableRoomCount(r.id, ROOM_TOTALS[r.id]);
+                return (
+                  <li key={r.id} className="flex items-center justify-between gap-2 text-sm">
+                    <span className="flex items-center gap-2"><r.icon className="size-4 text-gold-deep" /> {r.name}</span>
+                    <span className="font-semibold">{available} av {ROOM_TOTALS[r.id]} lediga</span>
+                  </li>
+                );
+              })}
             </ul>
             <p className="mt-3 border-t border-border pt-3 text-xs text-muted-foreground">
               {TOTAL_ROOMS} rum totalt · {MAX_BEDS} bäddar · {MAX_SQUEEZE} platser ihopträngt

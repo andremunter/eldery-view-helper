@@ -16,6 +16,7 @@ import {
   HeartPulse,
   Languages,
   LockKeyhole,
+  LogOut,
   Power,
   Radio,
   Send,
@@ -43,7 +44,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { addBooking } from "@/lib/booking-store";
 import { RoomBooking } from "@/components/RoomBooking";
+import { Checkout } from "@/components/Checkout";
 import bongoCatUp from "@/assets/bongo-cat-up.png";
 import bongoCatSlap from "@/assets/bongo-cat-slap.png";
 
@@ -68,12 +71,12 @@ export const Route = createFileRoute("/")({
 });
 
 type Language = "sv" | "en" | "sma";
-type View = "welcome" | "booking" | "services" | "security" | "infra";
+type View = "welcome" | "booking" | "services" | "security" | "infra" | "checkout";
 type DisplayMode = "standard" | "senior";
 
 const copy = {
   sv: {
-    nav: ["Välkommen", "Boka rum", "Gästtjänster", "Trygghet & säkerhet", "Drift & infrastruktur"],
+    nav: ["Välkommen", "Boka rum", "Gästtjänster", "Trygghet & säkerhet", "Drift & infrastruktur", "Utcheckning"],
     hello: "Buerie båeteme.",
     intro: "Hej! Jag är Hildur 4.0. Fråga mig om fjället, boka bastun eller beställ frukost. Jag rimmar inte längre och har slutat starta om mitt i en mening.",
     ask: "Vad kan jag hjälpa dig med?",
@@ -91,7 +94,7 @@ const copy = {
     infraIntro: "En robust driftkedja byggd för fjällväder, strömavbrott och riktigt varma bastukvällar.",
   },
   en: {
-    nav: ["Welcome", "Book a room", "Guest services", "Safety & security", "Operations & infrastructure"],
+    nav: ["Welcome", "Book a room", "Guest services", "Safety & security", "Operations & infrastructure", "Check-out"],
     hello: "Buerie båeteme.",
     intro: "Hi! I'm Hildur 4.0. Ask me about the mountain, book the sauna or order breakfast. I no longer rhyme or reboot mid-sentence.",
     ask: "How can I help?",
@@ -109,7 +112,7 @@ const copy = {
     infraIntro: "A resilient system built for mountain weather, power cuts and very hot sauna evenings.",
   },
   sma: {
-    nav: ["Buerie båeteme", "Gåetiem böörkedh", "Gåessie-dïenesjh", "Jearsoesvoete", "Dååjrehtimmie"],
+    nav: ["Buerie båeteme", "Gåetiem böörkedh", "Gåessie-dïenesjh", "Jearsoesvoete", "Dååjrehtimmie", "Utcheckning"],
     hello: "Buerie båeteme Hjortronasse.",
     intro: "Manne Hildur 4.0. Manne datnem viehkehtem saavnine, beapmojne jïh vaeresne.",
     ask: "Mij maahtam viehkiehtidh?",
@@ -134,6 +137,7 @@ const tabs: Array<{ id: View; icon: typeof Sparkles }> = [
   { id: "services", icon: BellRing },
   { id: "security", icon: ShieldCheck },
   { id: "infra", icon: Cloud },
+  { id: "checkout", icon: LogOut },
 ];
 
 function HotelApp() {
@@ -236,6 +240,7 @@ function HotelApp() {
         {view === "services" && <GuestServices t={t} tunaCans={tunaCans} setTunaCans={setTunaCans} kjellPetted={kjellPetted} setKjellPetted={setKjellPetted} kjellBribed={kjellBribed} setKjellBribed={setKjellBribed} />}
         {view === "security" && <Security t={t} />}
         {view === "infra" && <Infrastructure t={t} />}
+        {view === "checkout" && <Checkout />}
       </main>
 
       <div className="fixed bottom-4 left-4 z-40 flex border border-border bg-background shadow-xl md:hidden">
@@ -384,12 +389,15 @@ function GuestServices({ t, tunaCans, setTunaCans, kjellPetted, setKjellPetted, 
       toast.error("Berätta kort vad som hänt");
       return;
     }
-    if ((service === "breakfast" || service === "issue") && !room.trim()) {
+    if ((service === "sauna" || service === "breakfast" || service === "issue") && !room.trim()) {
       toast.error("Fyll i ditt rumsnummer");
       return;
     }
+    if (service === "sauna") {
+      addBooking({ type: "sauna", name: "Gäst", roomNumber: room.trim(), time, guests });
+    }
     toast.success(service === "sauna" ? "Bastun är bokad!" : service === "breakfast" ? "Frukosten är beställd!" : "Felanmälan är mottagen!", {
-      description: service === "sauna" ? `${time} för ${guests} ${guests === 1 ? "person" : "personer"}. Hildur har tänt aggregatet.` : "Receptionen bekräftar strax.",
+      description: service === "sauna" ? `${time} för ${guests} ${guests === 1 ? "person" : "personer"}. Rum ${room.trim()}. Hildur har tänt aggregatet.` : "Receptionen bekräftar strax.",
     });
     setIssue("");
   };
@@ -405,7 +413,7 @@ function GuestServices({ t, tunaCans, setTunaCans, kjellPetted, setKjellPetted, 
           })}
         </div>
         <div className="border border-border bg-card p-6 md:p-9">
-          {service === "sauna" && <SaunaForm guests={guests} setGuests={setGuests} time={time} setTime={setTime} kjellRevealed={kjellRevealed} tunaCans={tunaCans} setTunaCans={setTunaCans} kjellPetted={kjellPetted} setKjellPetted={setKjellPetted} kjellBribed={kjellBribed} setKjellBribed={setKjellBribed} />}
+          {service === "sauna" && <SaunaForm guests={guests} setGuests={setGuests} time={time} setTime={setTime} room={room} setRoom={setRoom} kjellRevealed={kjellRevealed} tunaCans={tunaCans} setTunaCans={setTunaCans} kjellPetted={kjellPetted} setKjellPetted={setKjellPetted} kjellBribed={kjellBribed} setKjellBribed={setKjellBribed} />}
           {service === "breakfast" && <BreakfastForm room={room} setRoom={setRoom} />}
           {service === "issue" && <IssueForm room={room} setRoom={setRoom} issue={issue} setIssue={setIssue} />}
           {service === "sauna" ? (
@@ -421,7 +429,7 @@ function GuestServices({ t, tunaCans, setTunaCans, kjellPetted, setKjellPetted, 
   );
 }
 
-function SaunaForm({ guests, setGuests, time, setTime, kjellRevealed, tunaCans, setTunaCans, kjellPetted, setKjellPetted, kjellBribed, setKjellBribed }: { guests: number; setGuests: (n: number) => void; time: string; setTime: (s: string) => void; kjellRevealed: boolean; tunaCans: number; setTunaCans: (n: number) => void; kjellPetted: boolean; setKjellPetted: (v: boolean) => void; kjellBribed: boolean; setKjellBribed: (v: boolean) => void }) {
+function SaunaForm({ guests, setGuests, time, setTime, room, setRoom, kjellRevealed, tunaCans, setTunaCans, kjellPetted, setKjellPetted, kjellBribed, setKjellBribed }: { guests: number; setGuests: (n: number) => void; time: string; setTime: (s: string) => void; room: string; setRoom: (s: string) => void; kjellRevealed: boolean; tunaCans: number; setTunaCans: (n: number) => void; kjellPetted: boolean; setKjellPetted: (v: boolean) => void; kjellBribed: boolean; setKjellBribed: (v: boolean) => void }) {
   const petKjell = () => { setKjellPetted(true); toast.success("Kjell spinner", { description: "Bastuvakten godkänner din klappteknik." }); };
   const buyTuna = () => { setTunaCans(tunaCans + 1); toast.success("Klunk!", { description: "En tonfiskburk rullade ut ur automaten." }); };
   const bribeKjell = () => {
@@ -430,7 +438,7 @@ function SaunaForm({ guests, setGuests, time, setTime, kjellRevealed, tunaCans, 
     setKjellBribed(true);
     toast.success("Förhandlingen är klar", { description: "Kjell placerar dig först i bastukön." });
   };
-  return <div><FormTitle icon={Flame} title="Bastun" text="45 minuter · Handduk och fjällvatten ingår" /><Label>Välj tid</Label><div className="mt-2 grid grid-cols-3 gap-2">{["17:00", "18:00", "19:00", "20:00", "21:00"].map((slot) => <button key={slot} onClick={() => setTime(slot)} className={cn("h-11 border text-sm font-bold transition-colors", time === slot ? "border-primary bg-primary text-primary-foreground" : "border-border hover:border-primary")}>{slot}</button>)}</div><div className="mt-7 flex items-end justify-between gap-4"><div><Label htmlFor="sauna-guests">Antal gäster</Label><p className="mt-1 text-xs text-muted-foreground">Max 8 personer av säkerhetsskäl</p></div><div className="flex items-center border border-border"><Button variant="ghost" size="icon" onClick={() => setGuests(Math.max(1, guests - 1))} aria-label="Minska antal gäster">−</Button><input id="sauna-guests" type="number" min={1} max={8} value={guests} onChange={(e) => { const v = parseInt(e.target.value, 10); if (!isNaN(v)) setGuests(Math.max(1, Math.min(8, v))); else if (e.target.value === "") setGuests(1); }} onBlur={(e) => { if (e.target.value === "") setGuests(1); }} className="w-11 border-0 bg-transparent text-center font-display text-xl outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" /><Button variant="ghost" size="icon" onClick={() => guests < 8 ? setGuests(guests + 1) : toast.warning("Bastun är full", { description: "Maxkapaciteten är 8 personer." })} aria-label="Öka antal gäster">+</Button></div></div><div className="mt-6 flex items-center gap-3 bg-gold-soft p-4 text-sm text-gold-deep"><Users className="size-5" /><span><strong>{8 - guests} platser kvar</strong> på din bokning</span></div>{kjellRevealed && <div className="mt-6 animate-in fade-in slide-in-from-bottom-3 border-2 border-gold bg-muted p-4"><div className="grid gap-4 sm:grid-cols-[7rem_1fr]"><img src={bongoCatUp} alt="Kjell gömmer sig bakom bastumenyn" width={1024} height={1024} loading="lazy" className="h-28 w-full object-contain" /><div><p className="font-display text-2xl">Kjell hittade dig.</p><p className="mt-1 text-sm text-muted-foreground">Ingen tonfisk, ingen bastu. En klapp är dessutom obligatorisk.</p><div className="mt-4 flex flex-wrap gap-2"><Button variant={kjellPetted ? "outline" : "default"} onClick={petKjell} disabled={kjellPetted}><Hand />{kjellPetted ? "Klappt och klart" : "Klappa Kjell"}</Button><Button variant="gold" onClick={bribeKjell} disabled={kjellBribed}><Fish />{kjellBribed ? "Först i kön" : "Ge tonfisk"}</Button></div></div></div></div>}<div className="mt-5 border border-border bg-background p-4"><div className="flex items-center justify-between gap-3"><div><p className="text-xs font-bold uppercase text-muted-foreground">Tonfiskautomaten</p><p className="font-display text-xl">FJÄLLFISK 24/7</p></div><div className="grid size-12 place-items-center bg-primary text-primary-foreground"><Fish /></div></div><div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-4"><span className="text-sm font-semibold">I fickan: {tunaCans} {tunaCans === 1 ? "burk" : "burkar"}</span><Button variant="outline" onClick={buyTuna}><Fish /> Köp tonfisk</Button></div></div></div>;
+  return <div><FormTitle icon={Flame} title="Bastun" text="45 minuter · Handduk och fjällvatten ingår" /><Label>Välj tid</Label><div className="mt-2 grid grid-cols-3 gap-2">{["17:00", "18:00", "19:00", "20:00", "21:00"].map((slot) => <button key={slot} onClick={() => setTime(slot)} className={cn("h-11 border text-sm font-bold transition-colors", time === slot ? "border-primary bg-primary text-primary-foreground" : "border-border hover:border-primary")}>{slot}</button>)}</div><div className="mt-7 flex items-end justify-between gap-4"><div><Label htmlFor="sauna-guests">Antal gäster</Label><p className="mt-1 text-xs text-muted-foreground">Max 8 personer av säkerhetsskäl</p></div><div className="flex items-center border border-border"><Button variant="ghost" size="icon" onClick={() => setGuests(Math.max(1, guests - 1))} aria-label="Minska antal gäster">−</Button><input id="sauna-guests" type="number" min={1} max={8} value={guests} onChange={(e) => { const v = parseInt(e.target.value, 10); if (!isNaN(v)) setGuests(Math.max(1, Math.min(8, v))); else if (e.target.value === "") setGuests(1); }} onBlur={(e) => { if (e.target.value === "") setGuests(1); }} className="w-11 border-0 bg-transparent text-center font-display text-xl outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" /><Button variant="ghost" size="icon" onClick={() => guests < 8 ? setGuests(guests + 1) : toast.warning("Bastun är full", { description: "Maxkapaciteten är 8 personer." })} aria-label="Öka antal gäster">+</Button></div></div><div className="mt-6"><Label htmlFor="sauna-room">Rumsnummer</Label><Input id="sauna-room" value={room} onChange={(e) => setRoom(e.target.value)} className="mt-2" placeholder="Till exempel 204" /></div><div className="mt-6 flex items-center gap-3 bg-gold-soft p-4 text-sm text-gold-deep"><Users className="size-5" /><span><strong>{8 - guests} platser kvar</strong> på din bokning</span></div>{kjellRevealed && <div className="mt-6 animate-in fade-in slide-in-from-bottom-3 border-2 border-gold bg-muted p-4"><div className="grid gap-4 sm:grid-cols-[7rem_1fr]"><img src={bongoCatUp} alt="Kjell gömmer sig bakom bastumenyn" width={1024} height={1024} loading="lazy" className="h-28 w-full object-contain" /><div><p className="font-display text-2xl">Kjell hittade dig.</p><p className="mt-1 text-sm text-muted-foreground">Ingen tonfisk, ingen bastu. En klapp är dessutom obligatorisk.</p><div className="mt-4 flex flex-wrap gap-2"><Button variant={kjellPetted ? "outline" : "default"} onClick={petKjell} disabled={kjellPetted}><Hand />{kjellPetted ? "Klappt och klart" : "Klappa Kjell"}</Button><Button variant="gold" onClick={bribeKjell} disabled={kjellBribed}><Fish />{kjellBribed ? "Först i kön" : "Ge tonfisk"}</Button></div></div></div></div>}<div className="mt-5 border border-border bg-background p-4"><div className="flex items-center justify-between gap-3"><div><p className="text-xs font-bold uppercase text-muted-foreground">Tonfiskautomaten</p><p className="font-display text-xl">FJÄLLFISK 24/7</p></div><div className="grid size-12 place-items-center bg-primary text-primary-foreground"><Fish /></div></div><div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-4"><span className="text-sm font-semibold">I fickan: {tunaCans} {tunaCans === 1 ? "burk" : "burkar"}</span><Button variant="outline" onClick={buyTuna}><Fish /> Köp tonfisk</Button></div></div></div>;
 }
 
 function BreakfastForm({ room, setRoom }: { room: string; setRoom: (s: string) => void }) {
