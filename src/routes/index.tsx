@@ -160,11 +160,10 @@ function HotelApp() {
             <div className="mt-12 flex w-full flex-col items-center gap-10">
               <Button
                 variant="lodgeGhost"
-                size="sm"
                 onClick={() => setDisplayMode("senior")}
-                className="h-7 px-2 text-[9px]"
+                className="h-auto min-h-24 w-full max-w-3xl whitespace-normal px-8 py-7 font-display text-3xl leading-tight md:min-h-32 md:text-5xl"
               >
-                <Eye className="size-3" /> SYNPROBLEM? TRYCK HÄR!
+                <Eye className="size-10" /> SYNPROBLEM? TRYCK HÄR!
               </Button>
               <Button
                 variant="gold"
