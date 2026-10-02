@@ -46,7 +46,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { RoomBooking } from "@/components/RoomBooking";
-import kjellPortrait from "@/assets/kjell-hotel-cat.jpg";
+import bongoCatUp from "@/assets/bongo-cat-up.png";
+import bongoCatSlap from "@/assets/bongo-cat-slap.png";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -253,7 +254,7 @@ function HotelApp() {
       <Dialog open={catOpen} onOpenChange={setCatOpen}>
         <DialogContent className="overflow-hidden border-gold/40 p-0 sm:max-w-md">
           <div className="h-56 overflow-hidden bg-primary">
-            <img src={kjellPortrait} alt="Kjell, Hotell Hjortronets långhåriga hotellkatt" width={1200} height={912} loading="lazy" className="h-full w-full object-cover object-[center_35%]" />
+            <img src={bongoCatUp} alt="Kjell, Hotell Hjortronets hotellkatt" width={1024} height={1024} loading="lazy" className="h-full w-full object-contain" />
           </div>
           <DialogHeader className="px-6 pb-2 pt-4 text-left">
             <DialogTitle className="font-display text-3xl">Det här är Kjell.</DialogTitle>
@@ -326,7 +327,7 @@ function Welcome({ t, onNavigate }: { t: Copy; onNavigate: (view: View) => void 
       </div>
       <section className="mt-8 grid overflow-hidden border border-border bg-card lg:grid-cols-[0.9fr_1.1fr]">
         <div className="relative min-h-[320px] overflow-hidden bg-muted">
-          <img src={kjellPortrait} alt="Kjell, Hotell Hjortronets långhåriga hotellkatt" width={1200} height={912} loading="lazy" className="absolute inset-0 h-full w-full object-cover object-[center_35%]" />
+          <img src={bongoCatUp} alt="Kjell, Hotell Hjortronets hotellkatt" width={1024} height={1024} loading="lazy" className="absolute inset-0 h-full w-full object-contain" />
           <div className="absolute bottom-4 left-4 bg-gold px-3 py-2 text-xs font-bold uppercase text-lodge">Bastubevakning pågår</div>
         </div>
         <div className="p-6 md:p-10">
