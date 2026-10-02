@@ -17,6 +17,9 @@ const rooms: Array<{ id: RoomType; name: string; total: number; capacity: number
 const empty: Counts = { single: 0, double: 0, suite: 0 };
 const capacityOf = (c: Counts, key: "capacity" | "squeeze" = "capacity") => rooms.reduce((sum, r) => sum + c[r.id] * r[key], 0);
 const roomCount = (c: Counts) => c.single + c.double + c.suite;
+const TOTAL_ROOMS = rooms.reduce((sum, r) => sum + r.total, 0);
+const MAX_BEDS = rooms.reduce((sum, r) => sum + r.total * r.capacity, 0);
+const MAX_SQUEEZE = rooms.reduce((sum, r) => sum + r.total * r.squeeze, 0);
 
 function suggest(people: number, key: "capacity" | "squeeze"): Counts | null {
   const s = { ...empty };
@@ -92,6 +95,21 @@ export function RoomBooking() {
         </div>
 
         <aside className="space-y-4">
+          <div className="border border-border bg-card p-6">
+            <p className="text-xs font-bold uppercase text-muted-foreground">Tillgängliga rum</p>
+            <ul className="mt-3 space-y-2">
+              {rooms.map((r) => (
+                <li key={r.id} className="flex items-center justify-between gap-2 text-sm">
+                  <span className="flex items-center gap-2"><r.icon className="size-4 text-gold-deep" /> {r.name}</span>
+                  <span className="font-semibold">{r.total - counts[r.id]} av {r.total} lediga</span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-3 border-t border-border pt-3 text-xs text-muted-foreground">
+              {TOTAL_ROOMS} rum totalt · {MAX_BEDS} bäddar · {MAX_SQUEEZE} platser ihopträngt
+            </p>
+          </div>
+
           <div className="bg-primary p-6 text-primary-foreground">
             <p className="mb-3 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest"><Sparkles className="size-4 text-gold" /> Hildur föreslår</p>
             {normal ? (
@@ -107,7 +125,7 @@ export function RoomBooking() {
                 <Button variant="gold" className="mt-4" onClick={() => { setCounts(squeezed); setBooked(false); }}>Tränga ihop oss</Button>
               </>
             ) : (
-              <p className="font-display text-2xl">{people} personer ryms inte ens om alla trängs ihop (max 98). Hildur föreslår tält på fjället.</p>
+              <p className="font-display text-2xl">{people} personer ryms inte ens om alla trängs ihop (max {MAX_SQUEEZE}). Hildur föreslår tält på fjället.</p>
             )}
           </div>
 
