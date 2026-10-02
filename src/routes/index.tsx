@@ -320,7 +320,7 @@ function Welcome({ t, onNavigate }: { t: Copy; onNavigate: (view: View) => void 
           <StatusRow icon={Sparkles} label={t.aurora} value="AV" meta="Molnigt · KP 2" off />
           <StatusRow icon={Cat} label={t.catStatus} value={t.sleepy} meta={t.revoked} gold />
           <Button variant="outline" className="mt-6 w-full justify-between" onClick={() => onNavigate("services")}>
-            {t.nav[1]} <ChevronRight />
+            {t.nav[2]} <ChevronRight />
           </Button>
         </aside>
       </div>
