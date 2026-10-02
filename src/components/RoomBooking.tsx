@@ -8,7 +8,6 @@ import { cn } from "@/lib/utils";
 import { addBooking, getNextRoomNumber, getAvailableRoomCount } from "@/lib/booking-store";
 import { RoomType } from "@/lib/bookings";
 
-type RoomType = "double" | "single" | "suite";
 type Counts = Record<RoomType, number>;
 
 const rooms: Array<{ id: RoomType; name: string; total: number; capacity: number; squeeze: number; icon: typeof BedDouble; text: string }> = [
@@ -69,21 +68,23 @@ export function RoomBooking() {
     if (total === 0) { toast.error("Välj minst ett rum"); return; }
     if (people > squeezeCap) { toast.error("Alla får inte plats", { description: "Följ Hildurs förslag eller lägg till fler rum." }); return; }
 
-    const bookings: Array<{ type: "room"; roomType: RoomType; guests: number; roomNumber: string }> = [];
-    for (const r of rooms) {
-      const count = counts[r.id];
-      for (let i = 0; i < count; i++) {
-        const roomNumber = getNextRoomNumber(r.id);
-        bookings.push({ type: "room", roomType: r.id, guests: r.capacity, roomNumber });
+    try {
+      const bookings: Array<{ type: "room"; roomType: RoomType; guests: number; roomNumber: string }> = [];
+      for (const r of rooms) {
+        const count = counts[r.id];
+        for (let i = 0; i < count; i++) {
+          const roomNumber = getNextRoomNumber(r.id);
+          const booking = { type: "room" as const, roomType: r.id, guests: r.capacity, roomNumber, name: guestName.trim() };
+          addBooking(booking);
+          bookings.push(booking);
+        }
       }
-    }
 
-    for (const b of bookings) {
-      addBooking({ ...b, name: guestName.trim() });
+      setBooked(true);
+      toast.success("Bokningen är klar!", { description: `${guestName.trim()} — ${people} personer i ${describe(counts)}. Rum: ${bookings.map((b) => b.roomNumber).join(", ")}` });
+    } catch (e) {
+      toast.error("Inga lediga rum", { description: e instanceof Error ? e.message : "Okänt fel" });
     }
-
-    setBooked(true);
-    toast.success("Bokningen är klar!", { description: `${guestName.trim()} — ${people} personer i ${describe(counts)}. Rum: ${bookings.map((b) => b.roomNumber).join(", ")}` });
   };
 
   return (

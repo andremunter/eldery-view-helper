@@ -55,7 +55,7 @@ export function getNextRoomNumber(roomType: RoomType): string {
       return i.toString();
     }
   }
-  return range.start.toString();
+  throw new Error(`Inga lediga rum av typen ${roomType}`);
 }
 
 export function getAvailableRoomCount(roomType: RoomType, total: number): number {
