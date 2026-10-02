@@ -77,7 +77,7 @@ export function RoomBooking() {
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-4 border border-border bg-card p-5">
             <div><Label>Antal personer</Label><p className="mt-1 text-xs text-muted-foreground">Max 62 i ordinarie bäddar</p></div>
-            <Stepper value={people} onMinus={() => { setBooked(false); setPeople(Math.max(1, people - 1)); }} onPlus={() => { setBooked(false); setPeople(people + 1); }} />
+            <Stepper value={people} min={1} max={MAX_SQUEEZE} onMinus={() => { setBooked(false); setPeople(Math.max(1, people - 1)); }} onPlus={() => { setBooked(false); setPeople(people + 1); }} onChange={(v) => { setBooked(false); setPeople(v); }} ariaLabel="antal personer" />
           </div>
 
           {rooms.map((r) => (
@@ -89,7 +89,7 @@ export function RoomBooking() {
                 <p className="mt-2 text-xs font-bold uppercase text-muted-foreground">{r.capacity} {r.capacity === 1 ? "person" : "personer"} · {r.total} rum totalt</p>
                 {r.id === "suite" && <p className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-gold-deep"><Fish className="size-3" /> Jacuzzi-värme: 1 tonfisk/kväll</p>}
               </div>
-              <Stepper value={counts[r.id]} onMinus={() => step(r.id, -1)} onPlus={() => counts[r.id] < r.total ? step(r.id, 1) : toast.warning(`Alla ${r.name.toLowerCase()} är valda`)} />
+              <Stepper value={counts[r.id]} min={0} max={r.total} onMinus={() => step(r.id, -1)} onPlus={() => counts[r.id] < r.total ? step(r.id, 1) : toast.warning(`Alla ${r.name.toLowerCase()} är valda`)} onChange={(v) => { setBooked(false); setCounts((c) => ({ ...c, [r.id]: v })); }} ariaLabel={`antal ${r.name.toLowerCase()}`} />
             </div>
           ))}
         </div>
@@ -145,12 +145,31 @@ export function RoomBooking() {
   );
 }
 
-function Stepper({ value, onMinus, onPlus }: { value: number; onMinus: () => void; onPlus: () => void }) {
+function Stepper({ value, onMinus, onPlus, onChange, min = 0, max, ariaLabel }: { value: number; onMinus: () => void; onPlus: () => void; onChange: (v: number) => void; min?: number; max?: number; ariaLabel: string }) {
+  const clamp = (v: number) => {
+    const n = Math.max(min, max !== undefined ? Math.min(max, v) : v);
+    onChange(n);
+  };
   return (
     <div className="flex items-center self-start border border-border sm:self-auto">
-      <Button variant="ghost" size="icon" onClick={onMinus} aria-label="Minska">−</Button>
-      <span className="w-11 text-center font-display text-xl">{value}</span>
-      <Button variant="ghost" size="icon" onClick={onPlus} aria-label="Öka">+</Button>
+      <Button variant="ghost" size="icon" onClick={onMinus} aria-label={`Minska ${ariaLabel}`}>−</Button>
+      <input
+        type="number"
+        value={value}
+        min={min}
+        max={max}
+        onChange={(e) => {
+          const v = parseInt(e.target.value, 10);
+          if (!isNaN(v)) clamp(v);
+          else if (e.target.value === "") onChange(min);
+        }}
+        onBlur={(e) => {
+          if (e.target.value === "") onChange(min);
+        }}
+        className="w-11 border-0 bg-transparent text-center font-display text-xl outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+        aria-label={ariaLabel}
+      />
+      <Button variant="ghost" size="icon" onClick={onPlus} aria-label={`Öka ${ariaLabel}`}>+</Button>
     </div>
   );
 }
