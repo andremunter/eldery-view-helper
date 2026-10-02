@@ -10,3 +10,5 @@
 <!-- LOVABLE:END -->
 
 - Keep the hotel experience as a local-state single-page interface; no persistence is required because guest actions are demonstrative.
+
+- Keep accessibility display preferences as presentation-only local state so the demonstrative hotel flows remain backend-free.

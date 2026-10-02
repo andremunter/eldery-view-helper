@@ -11,6 +11,7 @@ import {
   Cpu,
   Flame,
   Fish,
+  Eye,
   Hand,
   HeartPulse,
   Languages,
@@ -68,6 +69,7 @@ export const Route = createFileRoute("/")({
 
 type Language = "sv" | "en" | "sma";
 type View = "welcome" | "services" | "security" | "infra";
+type DisplayMode = "standard" | "senior";
 
 const copy = {
   sv: {
@@ -135,6 +137,7 @@ const tabs: Array<{ id: View; icon: typeof Sparkles }> = [
 
 function HotelApp() {
   const [language, setLanguage] = useState<Language>("sv");
+  const [displayMode, setDisplayMode] = useState<DisplayMode | null>(null);
   const [view, setView] = useState<View>("welcome");
   const [dark, setDark] = useState(true);
   const [catOpen, setCatOpen] = useState(false);
@@ -144,7 +147,37 @@ function HotelApp() {
   const t = copy[language];
 
   return (
-    <div className={cn("min-h-screen bg-background text-foreground transition-colors", dark && "dark")}>
+    <div className={cn("min-h-screen bg-background text-foreground transition-colors", dark && "dark", displayMode === "senior" && "senior-mode")}>
+      {displayMode === null && (
+        <div className="view-choice fixed inset-0 z-[100] grid place-items-center bg-lodge px-4 py-8 text-lodge-foreground" role="dialog" aria-modal="true" aria-labelledby="view-choice-title">
+          <div className="mountain-lines absolute inset-0 opacity-25" />
+          <div className="relative flex w-full max-w-4xl flex-col items-center text-center">
+            <div className="mb-8 grid size-20 place-items-center border-2 border-gold bg-gold text-lodge">
+              <span className="font-display text-4xl font-bold">H</span>
+            </div>
+            <p className="font-display text-2xl text-gold">Hotell Hjortronet</p>
+            <h1 id="view-choice-title" className="mt-3 font-display text-4xl md:text-6xl">Välj hur sidan ska visas</h1>
+            <div className="mt-12 flex w-full flex-col items-center gap-10">
+              <Button
+                variant="lodgeGhost"
+                size="sm"
+                onClick={() => setDisplayMode("senior")}
+                className="h-7 px-2 text-[9px]"
+              >
+                <Eye className="size-3" /> SYNPROBLEM? TRYCK HÄR!
+              </Button>
+              <Button
+                variant="gold"
+                onClick={() => setDisplayMode("standard")}
+                className="h-auto min-h-24 w-full max-w-3xl whitespace-normal px-8 py-7 font-display text-3xl leading-tight md:min-h-32 md:text-5xl"
+              >
+                Fortsätt till vanliga sidan
+                <ChevronRight className="size-10" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
       <header className="relative overflow-hidden border-b border-border bg-lodge text-lodge-foreground">
         <div className="mountain-lines absolute inset-0 opacity-25" />
         <div className="relative mx-auto flex max-w-[1440px] items-center justify-between gap-3 px-4 py-4 md:px-8">
@@ -173,6 +206,11 @@ function HotelApp() {
             <Button variant="lodgeGhost" size="icon" onClick={() => setDark(!dark)} aria-label={dark ? "Ljust läge" : "Mörkt läge"}>
               {dark ? <Sun /> : <Moon />}
             </Button>
+            {displayMode !== null && (
+              <Button variant="lodgeGhost" onClick={() => setDisplayMode(null)} className="px-3 md:px-4">
+                <Eye /> <span className="hidden sm:inline">Ändra visning</span>
+              </Button>
+            )}
             <Button variant="gold" onClick={() => setCatOpen(true)} className="px-3 md:px-4">
               <Cat /> <span className="hidden sm:inline">Kjell katten</span>
             </Button>
