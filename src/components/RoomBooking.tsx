@@ -56,8 +56,8 @@ export function RoomBooking() {
   };
 
   const book = () => {
-    if (total === 0) return toast.error("Välj minst ett rum");
-    if (people > squeezeCap) return toast.error("Alla får inte plats", { description: "Följ Hildurs förslag eller lägg till fler rum." });
+    if (total === 0) { toast.error("Välj minst ett rum"); return; }
+    if (people > squeezeCap) { toast.error("Alla får inte plats", { description: "Följ Hildurs förslag eller lägg till fler rum." }); return; }
     setBooked(true);
     toast.success("Bokningen är klar!", { description: `${people} personer i ${describe(counts)}.${counts.suite ? " Glöm inte tonfisken till Kjell." : ""}` });
   };
