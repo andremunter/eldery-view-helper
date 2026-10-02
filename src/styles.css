@@ -200,18 +200,18 @@
 
 /* Extra-large reading mode selected from the welcome overlay. */
 .senior-mode :where(p, span, button, input, textarea, label, small, a, strong) {
-  font-size: max(1.5rem, 1em) !important;
+  font-size: 2rem !important;
   line-height: 1.5 !important;
   white-space: normal;
 }
 
 .senior-mode :where(h1, h2, h3) {
-  font-size: max(3rem, 1em) !important;
+  font-size: 4rem !important;
   line-height: 1.15 !important;
 }
 
 .senior-mode :where(button, input, textarea) {
-  min-height: 4rem;
+  min-height: 5rem;
 }
 
 .senior-mode nav {
